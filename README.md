@@ -32,6 +32,9 @@ Under the `tutorials` folder you will see some tutorials called `<tutorial>.md`
 | Name               | Description                    | Status           |
 |--------------------|--------------------------------|------------------|
 | scale-with-ocp-metrics     | How to scale pods by using OCP Metrics     | Draft         |
+| keda-with-azure-servicebus | How to use KEDA to scale based upon message in Azure Service Bus | In Progress *|
+| triggers | What triggers are supported in CMA (not KEDA) | In Progress * |
+
 
 
 ---
