@@ -38,3 +38,69 @@ If you are not familiar with how ServiceMonitors work and how to enable them ple
 
 Long story sort a ServiceMonitor will scrape a prometheus endpoint periodically.  With this in place KEDA will scrape prometheus endpoint add metrics into OCP metrics and then KEDA can consume those and scale up as needed.
 
+--- Review ---
+By now you should have 
+
+- ns1 deployed
+- Deployment prometheus-example-app deployed
+- Service prometheus-example-app deployed
+- ServiceMonitor deployed
+- kedacontroller deployed watching namespace ns1
+
+
+If you have the above completed now we need to create a `ServiceAccount`, `Secrets`, `TriggerAuthentication`, `Role` and `RoleBinding` so we can give access to `ScaledObject` to consume metrics from `OCP`
+
+Since we will be calling via the thanos-querier we will do the following steps:
+
+Create the `ServiceAccount`
+
+```bash
+oc create serviceaccount thanos -n ns1
+```
+
+You can either apply the secret from `ref/prom-example-thanos-token-secret.yaml` or apply the below
+
+```bash
+apiVersion: v1
+kind: Secret
+metadata:
+  name: thanos-token
+  annotations:
+    kubernetes.io/service-account.name: thanos
+type: kubernetes.io/service-account-token
+```
+
+Now we need a way for KEDA to authenticate against OCP Metrics we will use `TriggerAuthentication` for this.
+For review this contains the secret and crt that were created previously.
+
+```bash
+oc apply -f prom-example-trigger-auth-prom.yaml
+```
+
+Now we need to create a `Role` and `RoleBinding`
+
+```bash
+oc apply -f prom-example-role-v1.yaml
+```
+
+```bash
+oc apply -f prom-example-rolebinding-v1.yaml
+```
+
+--- Review ---
+By now you should have 
+
+- ns1 deployed
+- Deployment prometheus-example-app deployed
+- Service prometheus-example-app deployed
+- ServiceMonitor deployed
+- kedacontroller deployed watching namespace ns1
+- Created the thanos SA
+- Created a secret for thanos called thanos-token
+- Created a TriggerAuthentication
+- Created a Role
+- Binded the thanos SA to the Role
+
+
+Once you have done that we are now able to deploy the ScaledObject and see our pods grow.
+

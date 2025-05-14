@@ -1,0 +1,25 @@
+  apiVersion: keda.sh/v1alpha1
+  kind: ScaledObject
+  metadata:
+    labels:
+      scaledobject.keda.sh/name: keda-scaled
+    name: keda-scaled
+    namespace: ns1
+  spec:
+    maxReplicaCount: 10
+    minReplicaCount: 1
+    pollingInterval: 30
+    scaleTargetRef:
+      kind: Deployment
+      name: prometheus-example-app
+    triggers:
+    - authenticationRef:
+        name: keda-trigger-auth-prometheus
+      metadata:
+        authModes: bearer
+        metricName: prometheus-example-app-keda
+        namespace: ns1
+        query: sum(rate(container_memory_usage_bytes{namespace="ns1"}[3m]))
+        serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
+        threshold: "2"
+      type: prometheus
