@@ -104,3 +104,81 @@ By now you should have
 
 Once you have done that we are now able to deploy the ScaledObject and see our pods grow.
 
+---
+
+To have KEDA actually scale an object you need to deploy a `ScaledObject` resource here is the example I am using for CMA:
+
+```bash
+  apiVersion: keda.sh/v1alpha1
+  kind: ScaledObject
+  metadata:
+    labels:
+      scaledobject.keda.sh/name: keda-scaled
+    name: keda-scaled
+    namespace: ns1
+  spec:
+    maxReplicaCount: 10
+    minReplicaCount: 1
+    pollingInterval: 30
+    scaleTargetRef:
+      kind: Deployment
+      name: prometheus-example-app
+    triggers:
+    - type: prometheus
+      metadata:
+        authModes: bearer
+        metricName: prometheus-example-app-keda
+        namespace: ns1
+        query: sum(rate(container_memory_usage_bytes{namespace="ns1"}[3m]))
+        serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
+        threshold: "2"
+      authenticationRef:
+        name: keda-trigger-auth-prometheus
+```
+
+In here we have
+
+```bash
+    maxReplicaCount: 10
+    minReplicaCount: 1
+    pollingInterval: 30
+    scaleTargetRef:
+      kind: Deployment
+      name: prometheus-example-app
+```
+
+This describes that should be scaled, and the min and max replicas.
+
+The scaling factor and is based upon the value given and threshold following loosely *** around the following formula
+
+```bash
+desiredReplicas = round(minReplicaCount + scaleFactor * (maxReplicaCount - minReplicaCount))
+```
+
+For multiple triggers you would structure it like so:
+
+```bash
+...
+triggers:
+    - type: prometheus
+      metadata:
+        authModes: bearer
+        metricName: prometheus-example-app-keda
+        namespace: ns1
+        query: sum(rate(container_memory_usage_bytes{namespace="ns1"}[3m]))
+        serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
+        threshold: "2"
+      authenticationRef:
+        name: keda-trigger-auth-prometheus
+
+    - type: prometheus
+      metadata:
+        authModes: bearer
+        metricName: kafka-consumer-lag
+        namespace: ns1
+        query: sum(rate(kafka_consumergroup_lag{namespace="ns1", topic="mytopic", consumergroup="my-group"}[5m]))
+        serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
+        threshold: "10"
+      authenticationRef:
+        name: keda-trigger-auth-prometheus
+```
