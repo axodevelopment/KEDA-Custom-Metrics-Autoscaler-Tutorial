@@ -1,6 +1,6 @@
 # Scaling an app with OCP Metrics 
 
-Tutorials around Streams For Apache Kafka running on OCP - How to manage day 2 tasks
+Tutorials around KEDA and OCP Metrics
 
 ## Overview of tutorial
 

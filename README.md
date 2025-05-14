@@ -31,7 +31,7 @@ Under the `tutorials` folder you will see some tutorials called `<tutorial>.md`
 
 | Name               | Description                    | Status           |
 |--------------------|--------------------------------|------------------|
-| basics     | basics    | In Progress          |
+| scale-with-ocp-metrics     | How to scale pods by using OCP Metrics     | Draft         |
 
 
 ---
